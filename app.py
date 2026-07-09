@@ -350,18 +350,7 @@ if lang == "فارسی":
 
 if lang == "English":
     title = "⏰ Least Laxity First (LLF) Scheduler Visualizer"
-    intro_text = """
-    This tool simulates and visualizes the **Least Laxity First (LLF)** (also known as **Least Slack Time - LST**) 
-    real-time scheduling algorithm for a set of arbitrary aperiodic tasks.
-    
-    **Laxity (Slack Time)** represents the amount of spare time a task has before it *must* execute to meet its deadline. 
-    It is computed at any time $t$ for an active task $T_i$ as:
-    $$L_i(t) = D_i - t - C_i(t)$$
-    where:
-    * $D_i$ is the absolute deadline of the task.
-    * $t$ is the current simulation time.
-    * $C_i(t)$ is the remaining execution/computation time needed.
-    """
+    intro_text = "$$L_i(t) = D_i - t - C_i(t)$$"
     sidebar_title = "Simulation Config"
     preemption_lbl = "Preemption Mode"
     preemptive_choice = ["Preemptive", "Non-Preemptive"]
@@ -394,16 +383,7 @@ if lang == "English":
     metric_missed = "Missed Deadlines"
 else:
     title = "⏰ شبیه‌ساز و تصویرساز الگوریتم زمان‌بندی کمترین سستی (LLF)"
-    intro_text = """
-    این ابزار الگوریتم زمان‌بندی زمان‌واقعی **کمترین سستی (Least Laxity First - LLF)** یا **کمترین زمان استراحت (Least Slack Time - LST)** را برای مجموعه‌ای از وظایف غیردوره‌ای (aperiodic) دلخواه شبیه‌سازی و تصویرسازی می‌کند.
-    
-    **سستی (Laxity / Slack Time)** نشان‌دهنده مقدار زمان اضافی است که یک وظیفه دارد قبل از اینکه *باید* برای رسیدن به ضرب‌الاجل خود اجرا شود. سستی در هر لحظه $t$ برای وظیفه فعال $T_i$ به این صورت محاسبه می‌شود:
-    $$L_i(t) = D_i - t - C_i(t)$$
-    که در آن:
-    * $D_i$ ضرب‌الاجل مطلق وظیفه است.
-    * $t$ زمان فعلی شبیه‌سازی است.
-    * $C_i(t)$ زمان محاسباتی/اجرایی باقی‌مانده مورد نیاز است.
-    """
+    intro_text = "$$L_i(t) = D_i - t - C_i(t)$$"
     sidebar_title = "پیکربندی شبیه‌سازی"
     preemption_lbl = "حالت پیش‌خوری (Preemption)"
     preemptive_choice = ["پیش‌خورانه (Preemptive)", "غیر پیش‌خورانه (Non-Preemptive)"]
@@ -466,30 +446,91 @@ input_method = st.sidebar.radio(input_lbl, input_choices)
 
 tasks = []
 
-# Default Classic Example Tasks
-default_tasks = [
-    {'id': 'T1', 'arrival': 0, 'computation': 4, 'deadline': 10},
-    {'id': 'T2', 'arrival': 1, 'computation': 3, 'deadline': 6},
-    {'id': 'T3', 'arrival': 2, 'computation': 2, 'deadline': 5},
-    {'id': 'T4', 'arrival': 4, 'computation': 1, 'deadline': 8}
-]
+# Pre-made Example Task Sets covering all core scheduling phenomena
+examples = {
+    "1. Classic Preemption & Tie-Breaker": [
+        {'id': 'T1', 'arrival': 0, 'computation': 4, 'deadline': 10},
+        {'id': 'T2', 'arrival': 1, 'computation': 3, 'deadline': 6},
+        {'id': 'T3', 'arrival': 2, 'computation': 2, 'deadline': 5},
+        {'id': 'T4', 'arrival': 4, 'computation': 1, 'deadline': 8}
+    ],
+    "2. Thrashing Scenario (Laxity Ties)": [
+        {'id': 'T1', 'arrival': 0, 'computation': 2, 'deadline': 5},
+        {'id': 'T2', 'arrival': 0, 'computation': 2, 'deadline': 5}
+    ],
+    "3. Preemptive vs Non-Preemptive": [
+        {'id': 'T1', 'arrival': 0, 'computation': 4, 'deadline': 6},
+        {'id': 'T2', 'arrival': 1, 'computation': 2, 'deadline': 4}
+    ],
+    "4. Tight Deadlines (Abort Demo)": [
+        {'id': 'T1', 'arrival': 0, 'computation': 3, 'deadline': 4},
+        {'id': 'T2', 'arrival': 0, 'computation': 3, 'deadline': 5}
+    ],
+    "5. Sparse Arrivals (Idle CPU Demo)": [
+        {'id': 'T1', 'arrival': 0, 'computation': 2, 'deadline': 5},
+        {'id': 'T2', 'arrival': 8, 'computation': 3, 'deadline': 12}
+    ]
+}
 
 if input_method == input_choices[0]:  # Custom Manual Entry
     st.subheader("Enter Task Details" if lang == "English" else "ورود مشخصات وظایف")
+    
+    # Pre-made examples selectbox
+    if lang == "English":
+        ex_label = "Load Pre-made Example Scenario"
+        ex_options = list(examples.keys())
+    else:
+        ex_label = "بارگذاری سناریو پیش‌فرض"
+        ex_options = [
+            "۱. پیش‌خوری کلاسیک و رفع تساوی",
+            "۲. حالت لرزش (تساوی سستی)",
+            "۳. پیش‌خورانه در مقابل غیر پیش‌خورانه",
+            "۴. ضرب‌الاجل‌های فشرده (سقط وظیفه)",
+            "۵. ورودهای پراکنده (زمان بیکاری پردازنده)"
+        ]
+        
+    ex_index = st.radio(ex_label, range(len(ex_options)), format_func=lambda x: ex_options[x])
+    selected_key = list(examples.keys())[ex_index]
+    init_tasks = examples[selected_key]
+    
+    # Pre-made scenario descriptions for user education
+    ex_explanations = {
+        "1. Classic Preemption & Tie-Breaker": {
+            "en": "**Focus**: *Preemption & Laxity Ties*. At $t=1$ and $t=2$, tasks with smaller laxity arrive and preempt the running task. At $t=3$ and $t=6$, tasks have equal laxity. Observe how changing the **Tie-Breaking Policy** in the sidebar alters the execution path.",
+            "fa": "**تمرکز**: *پیش‌خوری و تساوی سستی*. در زمان‌های $t=1$ و $t=2$ وظایفی با سستی کمتر وارد شده و وظیفه در حال اجرا را پیش‌خوری می‌کنند. در $t=3$ و $t=6$ سستی وظایف برابر می‌شود. مشاهده کنید چگونه تغییر **سیاست شکستن تساوی** در منوی کناری، مسیر اجرا را تغییر می‌دهد."
+        },
+        "2. Thrashing Scenario (Laxity Ties)": {
+            "en": "**Focus**: *Thrashing (Laxity Tie)*. Both tasks arrive at $t=0$ with equal laxity. Under preemptive mode with **Earlier Deadline** or **Lower Task ID**, they will preempt each other at every step. Change the tie-breaker to **Keep Currently Running** to observe how thrashing is eliminated.",
+            "fa": "**تمرکز**: *لرزش (تساوی سستی)*. هر دو وظیفه در $t=0$ با سستی برابر وارد می‌شوند. در حالت پیش‌خورانه با سیاست **ضرب‌الاجل نزدیک‌تر** یا **شناسه کوچک‌تر**، در هر گام تعویض قالب رخ می‌دهد (لرزش). سیاست تساوی را به **حفظ وظیفه در حال اجرا** تغییر دهید تا حذف لرزش را ببینید."
+        },
+        "3. Preemptive vs Non-Preemptive": {
+            "en": "**Focus**: *Scheduling Model Feasibility*. Toggle between **Preemptive** and **Non-Preemptive** in the sidebar. In preemptive mode, T2 preempts T1 at $t=1$ and both meet their deadlines. In non-preemptive mode, T1 blocks the CPU, causing T2 to miss its deadline.",
+            "fa": "**تمرکز**: *امکان‌سنجی مدل زمان‌بندی*. حالت پیش‌خوری را در منوی کناری بین **پیش‌خورانه** و **غیر پیش‌خورانه** تغییر دهید. در حالت پیش‌خورانه، T2 در $t=1$ کار T1 را قطع کرده و هر دو به موقع تمام می‌شوند. در حالت غیرپیش‌خورانه، T1 پردازنده را قفل کرده و باعث رد شدن ضرب‌الاجل T2 می‌شود."
+        },
+        "4. Tight Deadlines (Abort Demo)": {
+            "en": "**Focus**: *Deadline Miss & Abort Policy*. The task set is infeasible (total computation is 6 but max deadline is 5). Test the **Deadline Miss Policy** in the sidebar: **Abort Immediately** drops T2 at $t=2$ as soon as it's guaranteed to fail, while **Run to Completion** runs it with tardiness.",
+            "fa": "**تمرکز**: *رد شدن ضرب‌الاجل و سیاست سقط*. این مجموعه غیرقابل زمان‌بندی است (مجموع محاسبات ۶ و حداکثر ضرب‌الاجل ۵ است). **سیاست برخورد با عبور از ضرب‌الاجل** را در منوی کناری تست کنید: گزینه **سقط فوری** کار T2 را در $t=2$ به محض قطعیت شکست متوقف می‌کند، در حالی که گزینه **ادامه اجرا** آن را با دیرکرد انجام می‌دهد."
+        },
+        "5. Sparse Arrivals (Idle CPU Demo)": {
+            "en": "**Focus**: *Processor Idle States*. T1 completes at $t=2$, but T2 does not arrive until $t=8$. Observe the **Idle** block on the Gantt chart representing the CPU waiting period, showing how the system manages sparse arrivals.",
+            "fa": "**تمرکز**: *حالت‌های بیکاری پردازنده*. وظیفه T1 در $t=2$ تکمیل می‌شود، اما T2 تا $t=8$ وارد نمی‌شود. بلوک **بیکاری (Idle)** را روی نمودار گانت مشاهده کنید که نشان‌دهنده زمان انتظار پردازنده است و نشان می‌دهد سیستم چگونه کارهای پراکنده را مدیریت می‌کند."
+        }
+    }
+    
+    st.info(ex_explanations[selected_key]["en"] if lang == "English" else ex_explanations[selected_key]["fa"])
+    
     st.markdown(
         "Double-click cells to edit. Press `+` below the table to add new tasks." 
         if lang == "English" 
         else "روی سلول‌ها دوبار کلیک کنید تا ویرایش شوند. با دکمه `+` در زیر جدول می‌توانید وظایف جدید اضافه کنید."
     )
     
-    # Initialize session state for manual tasks if not present to persist user edits across re-runs
-    if "manual_tasks" not in st.session_state:
-        st.session_state.manual_tasks = pd.DataFrame(default_tasks)
+    init_df = pd.DataFrame(init_tasks)
     
     edited_df = st.data_editor(
-        st.session_state.manual_tasks,
+        init_df,
         num_rows="dynamic",
-        key="manual_tasks_editor",
+        key=f"manual_tasks_editor_sc_{ex_index}",
         column_config={
             "id": st.column_config.TextColumn(t_id, default="T1", required=True),
             "arrival": st.column_config.NumberColumn(t_arr, default=0, min_value=0, step=1, required=True),
@@ -498,9 +539,6 @@ if input_method == input_choices[0]:  # Custom Manual Entry
         },
         use_container_width=True
     )
-    
-    # Persist the latest user changes (including new rows and edits) in session state
-    st.session_state.manual_tasks = edited_df
     
     # Validate and build tasks list
     validation_ok = True
@@ -630,8 +668,11 @@ if len(tasks) > 0:
         df_gantt = pd.DataFrame(gantt_intervals)
         df_gantt['Duration'] = df_gantt['Finish'] - df_gantt['Start']
         
-        # Define color map for consistency
-        all_unique_tasks = sorted(list(df_gantt['Task'].unique()))
+        # Ensure all tasks defined in the input show up on the Y-axis of the Gantt chart, even if they didn't get to execute
+        input_task_ids = sorted(list(set(t['id'] for t in tasks)))
+        all_unique_tasks = input_task_ids.copy()
+        if 'Idle' in df_gantt['Task'].values:
+            all_unique_tasks.append('Idle')
         
         # Standard cool colors palette
         colors = px.colors.qualitative.Safe
@@ -653,7 +694,7 @@ if len(tasks) > 0:
             orientation="h",
             color="Task",
             color_discrete_map=color_map,
-            category_orders={"Task": all_unique_tasks[::-1]}, # Idle at the bottom
+            category_orders={"Task": all_unique_tasks[::-1]}, # Idle at the bottom, T1 at the top
             labels={"Task": "Task / وظیفه", "Start": "Time / زمان", "Duration": "Duration / مدت"},
             hover_data={"Start": True, "Finish": True, "Duration": True, "Task": False}
         )
@@ -671,7 +712,7 @@ if len(tasks) > 0:
             yaxis_title="Task / وظیفه",
             showlegend=True,
             legend_title_text="Tasks",
-            height=300 + (len(all_unique_tasks) * 30),
+            height=150 + (len(all_unique_tasks) * 50), # Scale vertically with spacing for each task row
             plot_bgcolor='white',
             margin=dict(l=50, r=50, t=20, b=50)
         )
