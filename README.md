@@ -33,31 +33,6 @@ Where:
 
 ## 🚀 How to Run the Project
 
-You can run the project either locally (in a virtual environment) or using Docker.
-
-### Method 1: Local Run (Python Virtual Environment)
-
-1. Open your terminal in the project directory:
-   ```bash
-   cd /home/kshyst/Desktop/University/ES_HW6
-   ```
-
-2. Make the runner script executable (already configured):
-   ```bash
-   chmod +x run.sh
-   ```
-
-3. Start the application:
-   ```bash
-   ./run.sh
-   ```
-   This automatically activates the local virtual environment (`venv/`) and launches the Streamlit app. It will open in your default browser at:
-   **http://localhost:8501**
-
----
-
-### Method 2: Docker & Docker Compose (Recommended)
-
 The project is fully containerized with a lightweight Debian-slim Python image and runs as a non-root system user for security.
 
 1. **Build and start the container**:
