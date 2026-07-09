@@ -1,0 +1,9 @@
+services:
+  llf-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: llf-scheduler-app
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
