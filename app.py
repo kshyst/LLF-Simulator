@@ -297,123 +297,38 @@ def run_llf_simulation(tasks, preemptive, tie_breaker, deadline_policy):
 
 # ----------------- Streamlit UI Layout -----------------
 
-# Language Toggle (English / Persian)
-lang = st.sidebar.radio("Language / زبان", ["English", "فارسی"], index=0)
+title = "Least Laxity First (LLF) Scheduler Visualizer"
+intro_text = "$$L_i(t) = D_i - t - C_i(t)$$"
+sidebar_title = "Simulation Config"
+preemption_lbl = "Preemption Mode"
+preemptive_choice = ["Preemptive", "Non-Preemptive"]
+tie_lbl = "Tie-Breaking Policy"
+tie_choices = ["Keep Currently Running", "Earlier Deadline", "Lower Task ID"]
+deadline_lbl = "Deadline Miss Policy"
+deadline_choices = ["Abort Immediately", "Run to completion"]
+input_lbl = "Task Input Method"
+input_choices = ["Custom Manual Entry", "Random Task Generator"]
 
-# Apply RTL Layout conditionally for Persian (فارسی)
-if lang == "فارسی":
-    st.markdown("""
-    <style>
-        /* Force Right-to-Left Layout and swap the sidebar position */
-        [data-testid="stAppViewContainer"] {
-            flex-direction: row-reverse !important;
-        }
-        [data-testid="stSidebar"] {
-            direction: rtl !important;
-            text-align: right !important;
-        }
-        .main .block-container {
-            direction: rtl !important;
-            text-align: right !important;
-        }
-        /* Swap the collapsed sidebar controller position to top-right */
-        [data-testid="stSidebarCollapsedControl"] {
-            left: auto !important;
-            right: 0 !important;
-            padding: 8px !important;
-        }
-        /* Ensure all core typographic and alert structures align RTL */
-        h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stAlert, li {
-            text-align: right !important;
-            direction: rtl !important;
-        }
-        /* Fix input labels and placeholders */
-        .stTextInput input, .stNumberInput input, .stSelectbox div {
-            text-align: right !important;
-            direction: rtl !important;
-        }
-        /* Fix table alignments */
-        .stDataFrame, .stTable {
-            direction: rtl !important;
-        }
-        /* Align specific widget items like checkboxes and radios */
-        [data-testid="stWidgetLabel"] p {
-            text-align: right !important;
-        }
-        /* Swap border highlight side for metric cards in RTL */
-        .metric-card {
-            border-left: 1px solid #E2E8F0 !important;
-            border-right: 5px solid #2563EB !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+t_id = "Task ID"
+t_arr = "Arrival Time"
+t_comp = "Computation Time"
+t_dl = "Deadline"
 
-if lang == "English":
-    title = "⏰ Least Laxity First (LLF) Scheduler Visualizer"
-    intro_text = "$$L_i(t) = D_i - t - C_i(t)$$"
-    sidebar_title = "Simulation Config"
-    preemption_lbl = "Preemption Mode"
-    preemptive_choice = ["Preemptive", "Non-Preemptive"]
-    tie_lbl = "Tie-Breaking Policy"
-    tie_choices = ["Keep Currently Running", "Earlier Deadline", "Lower Task ID"]
-    deadline_lbl = "Deadline Miss Policy"
-    deadline_choices = ["Abort Immediately", "Run to completion"]
-    input_lbl = "Task Input Method"
-    input_choices = ["Custom Manual Entry", "Random Task Generator"]
-    
-    t_id = "Task ID"
-    t_arr = "Arrival Time"
-    t_comp = "Computation Time"
-    t_dl = "Deadline"
-    
-    btn_generate = "Generate Random Tasks"
-    btn_simulate = "Simulate Scheduling"
-    results_lbl = "Simulation Results"
-    
-    tab_gantt = "Gantt Chart"
-    tab_laxity = "Laxity Over Time"
-    tab_data = "Task Data Table"
-    tab_log = "Step-by-Step Log"
-    tab_theory = "Scheduling Theory"
-    
-    metric_cpu = "CPU Utilization"
-    metric_avg_wait = "Average Waiting Time"
-    metric_switches = "Context Switches"
-    metric_preempts = "Preemptions (Involuntary)"
-    metric_missed = "Missed Deadlines"
-else:
-    title = "⏰ شبیه‌ساز و تصویرساز الگوریتم زمان‌بندی کمترین سستی (LLF)"
-    intro_text = "$$L_i(t) = D_i - t - C_i(t)$$"
-    sidebar_title = "پیکربندی شبیه‌سازی"
-    preemption_lbl = "حالت پیش‌خوری (Preemption)"
-    preemptive_choice = ["پیش‌خورانه (Preemptive)", "غیر پیش‌خورانه (Non-Preemptive)"]
-    tie_lbl = "سیاست شکستن تساوی سستی"
-    tie_choices = ["حفظ وظیفه در حال اجرای فعلی (کاهش تعویض‌قالب)", "ضرب‌الاجل نزدیک‌تر", "شناسه وظیفه کوچک‌تر"]
-    deadline_lbl = "سیاست برخورد با عبور از ضرب‌الاجل"
-    deadline_choices = ["سقط فوری وظیفه (Abort)", "ادامه اجرا تا تکمیل (Run to completion)"]
-    input_lbl = "روش ورود اطلاعات وظایف"
-    input_choices = ["ورود دستی وظایف دلخواه", "تولیدکننده وظایف تصادفی"]
-    
-    t_id = "شناسه وظیفه"
-    t_arr = "زمان ورود (Arrival)"
-    t_comp = "زمان محاسبات (Computation)"
-    t_dl = "ضرب‌الاجل (Deadline)"
-    
-    btn_generate = "تولید وظایف تصادفی"
-    btn_simulate = "شبیه‌سازی زمان‌بندی"
-    results_lbl = "نتایج شبیه‌سازی"
-    
-    tab_gantt = "نمودار گانت (Gantt)"
-    tab_laxity = "تغییرات سستی در طول زمان"
-    tab_data = "جدول نتایج وظایف"
-    tab_log = "گزارش گام‌به‌گام زمان‌بند"
-    tab_theory = "تئوری علمی الگوریتم"
-    
-    metric_cpu = "بهره‌وری پردازنده (CPU Utilization)"
-    metric_avg_wait = "میانگین زمان انتظار"
-    metric_switches = "تعویض‌های قالب (Context Switches)"
-    metric_preempts = "پیش‌خوری‌های ناخواسته (Preemptions)"
-    metric_missed = "ضرب‌الاجل‌های از دست رفته"
+btn_generate = "Generate Random Tasks"
+btn_simulate = "Simulate Scheduling"
+results_lbl = "Simulation Results"
+
+tab_gantt = "Gantt Chart"
+tab_laxity = "Laxity Over Time"
+tab_data = "Task Data Table"
+tab_log = "Step-by-Step Log"
+tab_theory = "Scheduling Theory"
+
+metric_cpu = "CPU Utilization"
+metric_avg_wait = "Average Waiting Time"
+metric_switches = "Context Switches"
+metric_preempts = "Preemptions (Involuntary)"
+metric_missed = "Missed Deadlines"
 
 st.title(title)
 st.markdown(intro_text)
@@ -473,57 +388,26 @@ examples = {
 }
 
 if input_method == input_choices[0]:  # Custom Manual Entry
-    st.subheader("Enter Task Details" if lang == "English" else "ورود مشخصات وظایف")
+    st.subheader("Enter Task Details")
     
-    # Pre-made examples selectbox
-    if lang == "English":
-        ex_label = "Load Pre-made Example Scenario"
-        ex_options = list(examples.keys())
-    else:
-        ex_label = "بارگذاری سناریو پیش‌فرض"
-        ex_options = [
-            "۱. پیش‌خوری کلاسیک و رفع تساوی",
-            "۲. حالت لرزش (تساوی سستی)",
-            "۳. پیش‌خورانه در مقابل غیر پیش‌خورانه",
-            "۴. ضرب‌الاجل‌های فشرده (سقط وظیفه)",
-            "۵. ورودهای پراکنده (زمان بیکاری پردازنده)"
-        ]
-        
+    ex_label = "Load Pre-made Example Scenario"
+    ex_options = list(examples.keys())
     ex_index = st.radio(ex_label, range(len(ex_options)), format_func=lambda x: ex_options[x])
     selected_key = list(examples.keys())[ex_index]
     init_tasks = examples[selected_key]
     
     # Pre-made scenario descriptions for user education
     ex_explanations = {
-        "1. Classic Preemption & Tie-Breaker": {
-            "en": "**Focus**: *Preemption & Laxity Ties*. At $t=1$ and $t=2$, tasks with smaller laxity arrive and preempt the running task. At $t=3$ and $t=6$, tasks have equal laxity. Observe how changing the **Tie-Breaking Policy** in the sidebar alters the execution path.",
-            "fa": "**تمرکز**: *پیش‌خوری و تساوی سستی*. در زمان‌های $t=1$ و $t=2$ وظایفی با سستی کمتر وارد شده و وظیفه در حال اجرا را پیش‌خوری می‌کنند. در $t=3$ و $t=6$ سستی وظایف برابر می‌شود. مشاهده کنید چگونه تغییر **سیاست شکستن تساوی** در منوی کناری، مسیر اجرا را تغییر می‌دهد."
-        },
-        "2. Thrashing Scenario (Laxity Ties)": {
-            "en": "**Focus**: *Thrashing (Laxity Tie)*. Both tasks arrive at $t=0$ with equal laxity. Under preemptive mode with **Earlier Deadline** or **Lower Task ID**, they will preempt each other at every step. Change the tie-breaker to **Keep Currently Running** to observe how thrashing is eliminated.",
-            "fa": "**تمرکز**: *لرزش (تساوی سستی)*. هر دو وظیفه در $t=0$ با سستی برابر وارد می‌شوند. در حالت پیش‌خورانه با سیاست **ضرب‌الاجل نزدیک‌تر** یا **شناسه کوچک‌تر**، در هر گام تعویض قالب رخ می‌دهد (لرزش). سیاست تساوی را به **حفظ وظیفه در حال اجرا** تغییر دهید تا حذف لرزش را ببینید."
-        },
-        "3. Preemptive vs Non-Preemptive": {
-            "en": "**Focus**: *Scheduling Model Feasibility*. Toggle between **Preemptive** and **Non-Preemptive** in the sidebar. In preemptive mode, T2 preempts T1 at $t=1$ and both meet their deadlines. In non-preemptive mode, T1 blocks the CPU, causing T2 to miss its deadline.",
-            "fa": "**تمرکز**: *امکان‌سنجی مدل زمان‌بندی*. حالت پیش‌خوری را در منوی کناری بین **پیش‌خورانه** و **غیر پیش‌خورانه** تغییر دهید. در حالت پیش‌خورانه، T2 در $t=1$ کار T1 را قطع کرده و هر دو به موقع تمام می‌شوند. در حالت غیرپیش‌خورانه، T1 پردازنده را قفل کرده و باعث رد شدن ضرب‌الاجل T2 می‌شود."
-        },
-        "4. Tight Deadlines (Abort Demo)": {
-            "en": "**Focus**: *Deadline Miss & Abort Policy*. The task set is infeasible (total computation is 6 but max deadline is 5). Test the **Deadline Miss Policy** in the sidebar: **Abort Immediately** drops T2 at $t=2$ as soon as it's guaranteed to fail, while **Run to Completion** runs it with tardiness.",
-            "fa": "**تمرکز**: *رد شدن ضرب‌الاجل و سیاست سقط*. این مجموعه غیرقابل زمان‌بندی است (مجموع محاسبات ۶ و حداکثر ضرب‌الاجل ۵ است). **سیاست برخورد با عبور از ضرب‌الاجل** را در منوی کناری تست کنید: گزینه **سقط فوری** کار T2 را در $t=2$ به محض قطعیت شکست متوقف می‌کند، در حالی که گزینه **ادامه اجرا** آن را با دیرکرد انجام می‌دهد."
-        },
-        "5. Sparse Arrivals (Idle CPU Demo)": {
-            "en": "**Focus**: *Processor Idle States*. T1 completes at $t=2$, but T2 does not arrive until $t=8$. Observe the **Idle** block on the Gantt chart representing the CPU waiting period, showing how the system manages sparse arrivals.",
-            "fa": "**تمرکز**: *حالت‌های بیکاری پردازنده*. وظیفه T1 در $t=2$ تکمیل می‌شود، اما T2 تا $t=8$ وارد نمی‌شود. بلوک **بیکاری (Idle)** را روی نمودار گانت مشاهده کنید که نشان‌دهنده زمان انتظار پردازنده است و نشان می‌دهد سیستم چگونه کارهای پراکنده را مدیریت می‌کند."
-        }
+        "1. Classic Preemption & Tie-Breaker": "**Focus**: *Preemption & Laxity Ties*. At $t=1$ and $t=2$, tasks with smaller laxity arrive and preempt the running task. At $t=3$ and $t=6$, tasks have equal laxity. Observe how changing the **Tie-Breaking Policy** in the sidebar alters the execution path.",
+        "2. Thrashing Scenario (Laxity Ties)": "**Focus**: *Thrashing (Laxity Tie)*. Both tasks arrive at $t=0$ with equal laxity. Under preemptive mode with **Earlier Deadline** or **Lower Task ID**, they will preempt each other at every step. Change the tie-breaker to **Keep Currently Running** to observe how thrashing is eliminated.",
+        "3. Preemptive vs Non-Preemptive": "**Focus**: *Scheduling Model Feasibility*. Toggle between **Preemptive** and **Non-Preemptive** in the sidebar. In preemptive mode, T2 preempts T1 at $t=1$ and both meet their deadlines. In non-preemptive mode, T1 blocks the CPU, causing T2 to miss its deadline.",
+        "4. Tight Deadlines (Abort Demo)": "**Focus**: *Deadline Miss & Abort Policy*. The task set is infeasible (total computation is 6 but max deadline is 5). Test the **Deadline Miss Policy** in the sidebar: **Abort Immediately** drops T2 at $t=2$ as soon as it's guaranteed to fail, while **Run to Completion** runs it with tardiness.",
+        "5. Sparse Arrivals (Idle CPU Demo)": "**Focus**: *Processor Idle States*. T1 completes at $t=2$, but T2 does not arrive until $t=8$. Observe the **Idle** block on the Gantt chart representing the CPU waiting period, showing how the system manages sparse arrivals."
     }
     
-    st.info(ex_explanations[selected_key]["en"] if lang == "English" else ex_explanations[selected_key]["fa"])
+    st.info(ex_explanations[selected_key])
     
-    st.markdown(
-        "Double-click cells to edit. Press `+` below the table to add new tasks." 
-        if lang == "English" 
-        else "روی سلول‌ها دوبار کلیک کنید تا ویرایش شوند. با دکمه `+` در زیر جدول می‌توانید وظایف جدید اضافه کنید."
-    )
+    st.markdown("Double-click cells to edit. Press `+` below the table to add new tasks.")
     
     init_df = pd.DataFrame(init_tasks)
     
@@ -545,39 +429,35 @@ if input_method == input_choices[0]:  # Custom Manual Entry
     for index, row in edited_df.iterrows():
         if pd.isna(row['id']) or str(row['id']).strip() == "":
             validation_ok = False
-            st.error(f"Task at index {index} has an empty ID!" if lang == "English" else f"وظیفه در ردیف {index} فاقد شناسه است!")
+            st.error(f"Task at index {index} has an empty ID!")
         if row['computation'] < 1:
             validation_ok = False
-            st.error(f"Task {row['id']} computation time must be >= 1!" if lang == "English" else f"زمان محاسبات وظیفه {row['id']} باید حداقل ۱ باشد!")
+            st.error(f"Task {row['id']} computation time must be >= 1!")
         if row['deadline'] < row['arrival'] + row['computation']:
-            st.warning(
-                f"Note: Task {row['id']} deadline is less than arrival + computation. This task is inherently infeasible!" 
-                if lang == "English" 
-                else f"توجه: ضرب‌الاجل وظیفه {row['id']} کمتر از زمان ورود به علاوه زمان اجراست. این وظیفه ذاتا غیرقابل انجام است!"
-            )
+            st.warning(f"Note: Task {row['id']} deadline is less than arrival + computation. This task is inherently infeasible!")
             
     # Check for duplicate IDs
     if len(edited_df['id'].unique()) != len(edited_df):
         validation_ok = False
-        st.error("Task IDs must be unique!" if lang == "English" else "شناسه‌های وظایف باید منحصربه‌فرد باشند!")
+        st.error("Task IDs must be unique!")
         
     if validation_ok and len(edited_df) > 0:
         tasks = edited_df.to_dict('records')
     else:
-        st.info("Please resolve table errors to start simulation." if lang == "English" else "لطفاً خطاهای جدول را برطرف کنید تا شبیه‌سازی شروع شود.")
+        st.info("Please resolve table errors to start simulation.")
 
 else:  # Random Generator
-    st.subheader("Configure Generator" if lang == "English" else "پیکربندی تولیدکننده تصادفی")
+    st.subheader("Configure Generator")
     
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        num_tasks = st.slider("Number of Tasks" if lang == "English" else "تعداد وظایف", 2, 8, 4)
+        num_tasks = st.slider("Number of Tasks", 2, 8, 4)
     with c2:
-        max_arr = st.slider("Max Arrival Time" if lang == "English" else "حداکثر زمان ورود", 0, 15, 6)
+        max_arr = st.slider("Max Arrival Time", 0, 15, 6)
     with c3:
-        comp_min, comp_max = st.slider("Computation Range" if lang == "English" else "محدوده زمان محاسبات", 1, 10, (2, 5))
+        comp_min, comp_max = st.slider("Computation Range", 1, 10, (2, 5))
     with c4:
-        slack_min, slack_max = st.slider("Deadline Slack Range" if lang == "English" else "محدوده سستی ضرب‌الاجل", 0, 15, (2, 8))
+        slack_min, slack_max = st.slider("Deadline Slack Range", 0, 15, (2, 8))
         
     # Persistent random state using streamlit session state
     if "random_tasks" not in st.session_state or st.button(btn_generate):
@@ -597,7 +477,7 @@ else:  # Random Generator
         
     tasks = st.session_state.random_tasks.copy()
     
-    st.markdown("### Generated Tasks" if lang == "English" else "### وظایف تولید شده")
+    st.markdown("### Generated Tasks")
     df_show = pd.DataFrame(tasks).rename(columns={
         'id': t_id,
         'arrival': t_arr,
@@ -647,9 +527,8 @@ if len(tasks) > 0:
         """, unsafe_allow_html=True)
     with m5:
         color = "#EF4444" if missed > 0 else "#10B981"
-        border_accent = f"border-right-color: {color} !important; border-left-color: #E2E8F0 !important; border-left-width: 1px !important; border-right-width: 5px !important;" if lang == "فارسی" else f"border-left-color: {color} !important;"
         st.markdown(f"""
-        <div class="metric-card" style="{border_accent}">
+        <div class="metric-card" style="border-left-color: {color} !important;">
             <div class="metric-val" style="color: {color}">{missed}</div>
             <div class="metric-lbl">{metric_missed}</div>
         </div>
@@ -662,7 +541,7 @@ if len(tasks) > 0:
     t_gantt, t_laxity, t_data, t_log, t_theory = st.tabs([tab_gantt, tab_laxity, tab_data, tab_log, tab_theory])
     
     with t_gantt:
-        st.subheader("Gantt Chart (Timeline of Task Execution)" if lang == "English" else "نمودار گانت (زمان‌بندی اجرای وظایف)")
+        st.subheader("Gantt Chart (Timeline of Task Execution)")
         
         # Convert gantt intervals to a dataframe
         df_gantt = pd.DataFrame(gantt_intervals)
@@ -723,31 +602,17 @@ if len(tasks) > 0:
         st.plotly_chart(fig_gantt, use_container_width=True)
         
         # Add visual deadline markers on the Gantt chart for educational clarity
-        st.markdown(
-            "*(Vertical grid lines represent 1-unit time steps. Visual markers representing deadlines can be cross-referenced with the data table.)*"
-            if lang == "English"
-            else "*(خطوط عمودی شبکه نشان‌دهنده گام‌های زمانی تک‌واحدی هستند. می‌توانید زمان‌های ضرب‌الاجل را با مراجعه به جدول زیر تطبیق دهید.)*"
-        )
+        st.markdown("*(Vertical grid lines represent 1-unit time steps. Visual markers representing deadlines can be cross-referenced with the data table.)*")
         
     with t_laxity:
-        st.subheader("Dynamic Laxity (Slack Time) Over Time" if lang == "English" else "تغییرات پویای مقدار سستی در طول زمان")
-        st.markdown(
-            """
+        st.subheader("Dynamic Laxity (Slack Time) Over Time")
+        st.markdown("""
             This plot shows the remaining **Laxity (Slack)** of each ready task at each time step.
             
             * **Laxity remains constant** when a task is executing (the curve is horizontal).
             * **Laxity decreases by 1** every step a task is ready but waiting (the curve slopes downwards).
             * When a task's laxity drops to **0** (represented by the dashed red line), it has zero slack. It *must* run immediately, or it will miss its deadline.
-            """
-            if lang == "English"
-            else """
-            این نمودار میزان **سستی (Laxity)** باقی‌مانده از هر وظیفه آماده به کار را در هر گام زمانی نشان می‌دهد.
-            
-            * **سستی ثابت می‌ماند** وقتی که وظیفه در حال اجراست (خط افقی است).
-            * **سستی به میزان ۱ واحد کاهش می‌یابد** به ازای هر گامی که وظیفه آماده است ولی منتظر اجرا می‌ماند (خط با شیب منفی به سمت پایین حرکت می‌کند).
-            * هنگامی که سستی وظیفه به مرز **۰** (خط‌چین قرمز) برسد، وظیفه دیگر زمان استراحت ندارد و *باید* فوراً اجرا شود، در غیر این صورت از ضرب‌الاجل عبور خواهد کرد.
-            """
-        )
+        """)
         
         if laxity_history:
             df_lax = pd.DataFrame(laxity_history)
@@ -809,34 +674,16 @@ if len(tasks) > 0:
             
             st.plotly_chart(fig_lax, use_container_width=True)
         else:
-            st.info("No laxity history recorded. (Did tasks get executed without waiting?)" if lang == "English" else "تاریخچه سستی وجود ندارد. (آیا تمام وظایف بدون انتظار فوراً اجرا شدند؟)")
+            st.info("No laxity history recorded. (Did tasks get executed without waiting?)")
             
     with t_data:
-        st.subheader("Detailed Scheduling Statistics per Task" if lang == "English" else "جزئیات آماری زمان‌بندی به تفکیک هر وظیفه")
+        st.subheader("Detailed Scheduling Statistics per Task")
         
-        # Format the display names
-        df_display = df_results.rename(columns={
-            'Task ID': t_id,
-            'Arrival Time': t_arr,
-            'Computation Time': t_comp,
-            'Deadline': t_dl,
-            'First Start Time': "First Start Time / زمان اولین شروع",
-            'Completion Time': "Completion Time / زمان پایان",
-            'Waiting Time': "Waiting Time / زمان انتظار کل",
-            'Lateness': "Lateness / تاخیر ضرب‌الاجل (با علامت)",
-            'Tardiness': "Tardiness / مقدار دیرکرد مطلق",
-            'Status': "Status / وضعیت"
-        })
-        
-        st.dataframe(df_display.style.highlight_max(axis=0, color="#FFE4E6", subset=["Tardiness / مقدار دیرکرد مطلق"]), use_container_width=True)
+        st.dataframe(df_results.style.highlight_max(axis=0, color="#FFE4E6", subset=["Tardiness"]), use_container_width=True)
         
     with t_log:
-        st.subheader("Scheduling Trace Log" if lang == "English" else "شرح گزارش گام‌به‌گام تصمیمات زمان‌بند")
-        st.markdown(
-            "This log traces the scheduler state, laxity calculation, preemption, and completed tasks at each step."
-            if lang == "English"
-            else "این گزارش وضعیت زمان‌بند، محاسبات سستی، پیش‌خوری‌ها و اتمام کارها را در هر لحظه گام‌به‌گام شرح می‌دهد."
-        )
+        st.subheader("Scheduling Trace Log")
+        st.markdown("This log traces the scheduler state, laxity calculation, preemption, and completed tasks at each step.")
         
         # HTML log rendering
         log_html = "<div style='background-color:#F8FAFC; border: 1px solid #E2E8F0; padding:15px; border-radius:8px; font-family: Courier New, monospace; line-height: 1.6; max-height: 500px; overflow-y: scroll;'>"
@@ -847,67 +694,44 @@ if len(tasks) > 0:
         st.markdown(log_html, unsafe_allow_html=True)
         
     with t_theory:
-        st.subheader("Algorithm Analysis & Theoretical Overview" if lang == "English" else "تحلیل تئوری و علمی الگوریتم زمان‌بندی")
+        st.subheader("Algorithm Analysis & Theoretical Overview")
+        st.markdown("""
+        ### What is Least Laxity First (LLF)?
+        The **Least Laxity First (LLF)** or **Least Slack Time First (LST)** algorithm is a dynamic real-time scheduling algorithm. It assigns priority based on the **laxity (slack time)** of tasks.
         
-        if lang == "English":
-            st.markdown("""
-            ### What is Least Laxity First (LLF)?
-            The **Least Laxity First (LLF)** or **Least Slack Time First (LST)** algorithm is a dynamic real-time scheduling algorithm. It assigns priority based on the **laxity (slack time)** of tasks.
-            
-            #### Mathematical Formulation
-            Let a task $T_i$ have an absolute deadline $D_i$ and a remaining execution time $C_i(t)$ at time $t$. The laxity $L_i(t)$ is defined as:
-            $$L_i(t) = D_i - t - C_i(t)$$
-            
-            At any scheduling point:
-            * The task with the **smallest laxity** is assigned the highest priority and scheduled on the processor.
-            * Laxity is a measure of urgency. If $L_i(t) = 0$, it means task $T_i$ must run immediately to complete by $D_i$. If it waits even one step, it is guaranteed to miss its deadline ($L_i(t) < 0$).
-            
-            #### Core Properties & Optimality
-            1. **Preemptive Optimality**: Preemptive LLF is **optimal** on uniprocessor systems. If a set of tasks can be scheduled by any algorithm to meet all deadlines, LLF is guaranteed to schedule it successfully.
-            2. **Dynamic Priority**: Priorities are dynamic because the laxity changes dynamically as time progresses and tasks execute.
-            
-            #### The Thrashing Limitation (The Laxity Tie Problem)
-            A major challenge with preemptive LLF is **thrashing (frequent context switching)**.
-            * Consider two tasks $T_1$ and $T_2$ with equal laxity.
-            * At time $t$, $T_1$ runs. Its remaining execution time decreases, so its laxity remains constant.
-            * Meanwhile, $T_2$ waits. Its remaining execution time is unchanged, so its laxity decreases by 1.
-            * At $t+1$, $T_2$ has smaller laxity than $T_1$ and preempts $T_1$.
-            * Now $T_2$ runs and its laxity remains constant, while $T_1$ waits and its laxity decreases.
-            * At $t+2$, $T_1$ now has smaller laxity and preempts $T_2$.
-            * This leads to a context switch at **every single time step**!
-            
-            #### Solutions to Thrashing (Selectable in this app):
-            * **Keep Currently Running (Tie-Breaker)**: If two tasks have equal laxity, priority is given to the one currently running. This breaks the thrashing cycle and avoids unnecessary context switches, making LLF practical for real embedded systems.
-            """)
-        else:
-            st.markdown("""
-            ### الگوریتم زمان‌بندی کمترین سستی (LLF) چیست؟
-            الگوریتم **Least Laxity First (LLF)** که با نام **Least Slack Time First (LST)** نیز شناخته می‌شود، یک الگوریتم زمان‌بندی پویا برای سیستم‌های زمان‌واقعی (Real-Time) سخت است. در این الگوریتم، اولویت وظایف بر اساس میزان **سستی (Laxity یا Slack)** تعیین می‌شود.
-            
-            #### فرمول ریاضی سستی
-            برای وظیفه $T_i$ با ضرب‌الاجل مطلق $D_i$ و زمان باقیمانده اجرای محاسبات $C_i(t)$ در لحظه $t$، سستی $L_i(t)$ برابر است با:
-            $$L_i(t) = D_i - t - C_i(t)$$
-            
-            مکانیزم تصمیم‌گیری زمان‌بند:
-            * وظیفه‌ای که **کمترین سستی** را دارد، بالاترین اولویت را دریافت کرده و پردازنده به آن اختصاص می‌یابد.
-            * سستی معیاری از فوریت کار است. اگر $L_i(t) = 0$ شود، وظیفه $T_i$ باید دقیقاً از همان لحظه اجرا شود تا ضرب‌الاجل را از دست ندهد. اگر حتی یک گام منتظر بماند، سستی منفی شده و قطعاً از ضرب‌الاجل عبور خواهد کرد ($L_i(t) < 0$).
-            
-            #### ویژگی‌های اصلی و بهینگی (Optimality)
-            ۱. **بهینگی پیش‌خورانه**: الگوریتم LLF پیش‌خورانه روی سیستم‌های تک‌پردازنده‌ای **بهینه** است. یعنی اگر مجموعه‌ای از کارها توسط هر الگوریتم دیگری قابل زمان‌بندی باشد، LLF نیز قطعاً می‌تواند آنها را بدون از دست رفتن ضرب‌الاجل زمان‌بندی کند.
-            ۲. **اولویت پویا**: اولویت‌ها در طول زمان تغییر می‌کنند، زیرا زمان جلو می‌رود و بسته به اجرا شدن یا نشدن وظایف، سستی آنها تغییر می‌کند.
-            
-            #### چالش لرزش یا تعویض قالب شدید (Thrashing)
-            بزرگترین چالش در الگوریتم LLF سنتی، پدیده **لرزش (Thrashing)** است:
-            * فرض کنید دو وظیفه $T_1$ و $T_2$ سستی کاملاً برابری داشته باشند.
-            * در لحظه $t$ وظیفه $T_1$ اجرا می‌شود. چون اجرا شده سستی آن ثابت می‌ماند. اما $T_2$ متوقف است و سستی آن ۱ واحد کاهش می‌یابد.
-            * در لحظه $t+1$ وظیفه $T_2$ سستی کمتری پیدا کرده و جایگزین $T_1$ می‌شود (پیش‌خوری).
-            * در این لحظه $T_2$ اجرا می‌شود و سستی‌اش ثابت می‌ماند، اما $T_1$ متوقف مانده و سستی‌اش کاهش می‌یابد.
-            * در لحظه $t+2$ مجدداً $T_1$ سستی کمتری پیدا کرده و جایگزین $T_2$ می‌شود.
-            * این فرآیند باعث می‌شود در **هر گام زمانی تک‌واحدی** یک تعویض قالب (Context Switch) رخ دهد که سربار پردازشی بسیار شدیدی به سیستم تحمیل می‌کند.
-            
-            #### راه‌حل‌های حل مشکل لرزش (تعبیه شده در این برنامه):
-            * **سیاست حفظ وظیفه در حال اجرا (Keep Currently Running)**: در زمان تساوی سستی، پردازنده اولویت را به کاری می‌دهد که در گام قبلی در حال اجرا بوده است. این سیاست ساده مانع از لرزش مداوم بین کارهای با سستی یکسان شده و تعداد تعویض‌های قالب را به شدت کاهش می‌دهد، که برای سیستم‌های جاسازی‌شده واقعی ضروری است.
-            """)
+        #### Mathematical Formulation
+        Let a task $T_i$ have an absolute deadline $D_i$ and a remaining execution time $C_i(t)$ at time $t$. The laxity $L_i(t)$ is defined as:
+        $$L_i(t) = D_i - t - C_i(t)$$
+        
+        At any scheduling point:
+        * The task with the **smallest laxity** is assigned the highest priority and scheduled on the processor.
+        * Laxity is a measure of urgency. If $L_i(t) = 0$, it means task $T_i$ must run immediately to complete by $D_i$. If it waits even one step, it is guaranteed to miss its deadline ($L_i(t) < 0$).
+        
+        #### Core Properties & Optimality
+        1. **Preemptive Optimality**: Preemptive LLF is **optimal** on uniprocessor systems. If a set of tasks can be scheduled by any algorithm to meet all deadlines, LLF is guaranteed to schedule it successfully.
+        2. **Dynamic Priority**: Priorities are dynamic because the laxity changes dynamically as time progresses and tasks execute.
+        
+        #### The Thrashing Limitation (The Laxity Tie Problem)
+        A major challenge with preemptive LLF is **thrashing (frequent context switching)**.
+        * Consider two tasks $T_1$ and $T_2$ with equal laxity.
+        * At time $t$, $T_1$ runs. Its remaining execution time decreases, so its laxity remains constant.
+        * Meanwhile, $T_2$ waits. Its remaining execution time is unchanged, so its laxity decreases by 1.
+        * At $t+1$, $T_2$ has smaller laxity than $T_1$ and preempts $T_1$.
+        * Now $T_2$ runs and its laxity remains constant, while $T_1$ waits and its laxity decreases.
+        * At $t+2$, $T_1$ now has smaller laxity and preempts $T_2$.
+        * This leads to a context switch at **every single time step**!
+        
+        #### Solutions to Thrashing (Selectable in this app):
+        * **Keep Currently Running (Tie-Breaker)**: If two tasks have equal laxity, priority is given to the one currently running. This breaks the thrashing cycle and avoids unnecessary context switches, making LLF practical for real embedded systems.
+        """)
             
 else:
-    st.warning("Please define a set of tasks." if lang == "English" else "لطفاً مجموعه‌ای از وظایف را تعریف کنید.")
+    st.warning("Please define a set of tasks.")
+
+# ----------------- Footer -----------------
+st.markdown("---")
+st.markdown("""
+<div style="text-align: center; color: #94A3B8; font-size: 14px; padding: 8px 0;">
+    Kiarash Shojaei Arani &nbsp;|&nbsp; 402106101 &nbsp;|&nbsp; HW6
+</div>
+""", unsafe_allow_html=True)
