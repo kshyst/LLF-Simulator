@@ -2,11 +2,9 @@
 
 This project is an interactive, visual simulator for the **Least Laxity First (LLF)** / **Least Slack Time First (LST)** real-time scheduling algorithm. It is designed to model and schedule any arbitrary set of **aperiodic tasks** and visualize the scheduling process dynamically.
 
-The application supports a complete bilingual interface (English and **فارسی/Persian**) with full **Right-to-Left (RTL)** layout shifts in Persian mode. It is built using **Python**, **Streamlit** for the web dashboard, and **Plotly** for interactive graphs.
-
 ---
 
-## ⚙️ Theory & Mathematics
+## Theory & Mathematics
 
 **Laxity** (or **Slack Time**) represents the amount of spare time a task has before it *must* execute to meet its deadline. For any active task $T_i$ at time step $t$, the laxity $L_i(t)$ is calculated as:
 
@@ -31,7 +29,7 @@ Where:
 
 ---
 
-## 🚀 How to Run the Project
+## How to Run the Project
 
 The project is fully containerized with a lightweight Debian-slim Python image and runs as a non-root system user for security.
 
